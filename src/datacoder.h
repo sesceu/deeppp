@@ -1,7 +1,10 @@
-#ifndef DATACODER_H
-#define DATACODER_H
+#ifndef DEEPPP_DATACODER_H
+#define DEEPPP_DATACODER_H
 
 #include <Eigen/Core>
+
+namespace deeppp
+{
 
 template <typename Source, typename Destination>
 class DataCoder
@@ -36,4 +39,6 @@ Source DataCoder<Source, Destination>::decode(const Destination& data)
     return data;
 }
 
-#endif // DATACODER_H
+}  // namespace deeppp
+
+#endif // DEEPPP_DATACODER_H

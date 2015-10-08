@@ -1,20 +1,23 @@
-#ifndef TIMESERIESLAYER_H
-#define TIMESERIESLAYER_H
+#ifndef DEEPPP_TIMESERIESLAYER_H
+#define DEEPPP_TIMESERIESLAYER_H
 
 #include "layer.h"
 
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons, std::size_t series_length, template <typename, std::size_t, std::size_t> class LayerType>
-class TimeseriesLayer : public LayerType<FloatType, input_neurons * series_length, output_neurons>
+namespace deeppp
+{
+
+template <typename LayerType>
+class TimeseriesLayer : public LayerType
 {
  public:
-    typedef Eigen::Matrix<FloatType, input_neurons, 1> SeriesElementVector;
-    typedef LayerType<FloatType, input_neurons * series_length, output_neurons> Base;
+    typedef Eigen::VectorXd SeriesElementVector;
+    typedef LayerType Base;
 
     /**
      * @brief TimeseriesLayer
      * @param learning_rate
      */
-    TimeseriesLayer(FloatType learning_rate);
+    TimeseriesLayer(std::size_t input_neurons, std::size_t output_neurons, std::size_t time_series, double learning_rate);
 
     void Input(const typename Base::InputVector& input) override;
     using Base::Input;
@@ -39,6 +42,12 @@ class TimeseriesLayer : public LayerType<FloatType, input_neurons * series_lengt
 
  private:
 
+    //! the number of time series
+    std::size_t time_series_;
+
+    //! the length of one time series
+    std::size_t time_series_length_;
+
     //! the number of added elements, in order to decide when the input vector is complete
     std::size_t number_of_added_elements_;
 
@@ -47,34 +56,36 @@ class TimeseriesLayer : public LayerType<FloatType, input_neurons * series_lengt
 
 };
 
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons, std::size_t series_length, template <typename, std::size_t, std::size_t> class LayerType>
-TimeseriesLayer<FloatType, input_neurons, output_neurons, series_length, LayerType>::TimeseriesLayer(FloatType learning_rate)
-    : LayerType<FloatType, input_neurons * series_length, output_neurons>(learning_rate),
-      number_of_added_elements_(0)
+template <typename LayerType>
+TimeseriesLayer<LayerType>::TimeseriesLayer(std::size_t input_neurons, std::size_t output_neurons, std::size_t time_series, double learning_rate)
+    : LayerType(input_neurons * time_series, output_neurons, learning_rate),
+      time_series_(time_series), time_series_length_(input_neurons),
+      number_of_added_elements_(0), time_series_vector_(input_neurons * time_series)
 {
     ResetTimeseries();
 }
 
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons, std::size_t series_length, template <typename, std::size_t, std::size_t> class LayerType>
-void TimeseriesLayer<FloatType, input_neurons, output_neurons, series_length, LayerType>::Input(const typename Base::InputVector& input)
+template <typename LayerType>
+void TimeseriesLayer<LayerType>::Input(const typename Base::InputVector& input)
 {
     time_series_vector_ = input;
     Base::Input(time_series_vector_);
 }
 
 
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons, std::size_t series_length, template <typename, std::size_t, std::size_t> class LayerType>
-bool TimeseriesLayer<FloatType, input_neurons, output_neurons, series_length, LayerType>::Append(const SeriesElementVector& series_element)
+template <typename LayerType>
+bool TimeseriesLayer<LayerType>::Append(const SeriesElementVector& series_element)
 {
-    time_series_vector_.head(input_neurons * (series_length - 1)) =
-        time_series_vector_.tail(input_neurons * (series_length - 1));
-    time_series_vector_.tail(input_neurons) = series_element;
+    assert(static_cast<std::size_t>(series_element.rows()) == time_series_length_);
+    time_series_vector_.head(time_series_length_ * (time_series_ - 1)) =
+        time_series_vector_.tail(time_series_length_ * (time_series_ - 1));
+    time_series_vector_.tail(time_series_length_) = series_element;
     this->Input(time_series_vector_);
     number_of_added_elements_++;
 
-    if (number_of_added_elements_ >= series_length)
+    if (number_of_added_elements_ >= time_series_)
     {
-        number_of_added_elements_ = series_length;
+        number_of_added_elements_ = time_series_;
         return true;
     }
     else
@@ -83,18 +94,22 @@ bool TimeseriesLayer<FloatType, input_neurons, output_neurons, series_length, La
     }
 }
 
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons, std::size_t series_length, template <typename, std::size_t, std::size_t> class LayerType>
-void TimeseriesLayer<FloatType, input_neurons, output_neurons, series_length, LayerType>::ResetTimeseries()
+template <typename LayerType>
+void TimeseriesLayer<LayerType>::ResetTimeseries()
 {
     number_of_added_elements_ = 0;
     time_series_vector_.setConstant(0.5);
+    Input(time_series_vector_);
 }
 
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons, std::size_t series_length, template <typename, std::size_t, std::size_t> class LayerType>
-void TimeseriesLayer<FloatType, input_neurons, output_neurons, series_length, LayerType>::ReplaceLatest(const SeriesElementVector& series_element)
+template <typename LayerType>
+void TimeseriesLayer<LayerType>::ReplaceLatest(const SeriesElementVector& series_element)
 {
-    time_series_vector_.tail(input_neurons) = series_element;
-    this->Input(time_series_vector_);
+    assert(static_cast<std::size_t>(series_element.rows()) == time_series_length_);
+    time_series_vector_.tail(time_series_length_) = series_element;
+    Input(time_series_vector_);
 }
 
-#endif // TIMESERIESLAYER_H
+}  // namespace deeppp
+
+#endif // DEEPPP_TIMESERIESLAYER_H

@@ -1,9 +1,12 @@
-#ifndef MNISTIMAGE_H
-#define MNISTIMAGE_H
+#ifndef DEEPPP_MNISTIMAGE_H
+#define DEEPPP_MNISTIMAGE_H
 
 #include <array>
 #include <cstddef>
 #include <stdexcept>
+
+namespace deeppp
+{
 
 template <std::size_t rows, std::size_t columns>
 class MNISTImage
@@ -80,5 +83,6 @@ unsigned char MNISTImage<rows, columns>::operator[] (std::size_t pixel) const
     return data_[pixel];
 }
 
+}  // namespace deeppp
 
 #endif // MNISTIMAGE_H

@@ -1,18 +1,23 @@
-#ifndef LAYER_H
-#define LAYER_H
+#ifndef DEEPPP_LAYER_H
+#define DEEPPP_LAYER_H
 
-#include <cstddef>
-#include <math.h>
 #include <Eigen/Core>
 
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons>
+namespace deeppp
+{
+
 class Layer
 {
  public:
-    typedef Eigen::Matrix<FloatType, input_neurons, 1> InputVector;
-    typedef Eigen::Matrix<FloatType, output_neurons, 1> OutputVector;
+    typedef Eigen::VectorXd InputVector;
+    typedef Eigen::VectorXd OutputVector;
 
-    Layer();
+    /**
+     * @brief Layer
+     * @param input_neurons
+     * @param output_neurons
+     */
+    Layer(std::size_t input_neurons, std::size_t output_neurons);
 
     /**
      * @brief Input
@@ -51,6 +56,18 @@ class Layer
     virtual OutputVector& Output();
 
     /**
+     * @brief InputNeurons
+     * @return
+     */
+    virtual std::size_t InputNeurons() const;
+
+    /**
+     * @brief OutputNeurons
+     * @return
+     */
+    virtual std::size_t OutputNeurons() const;
+
+    /**
      * @brief up calculates the outputs based on the inputs
      */
     virtual void Up() = 0;
@@ -65,14 +82,13 @@ class Layer
      */
     virtual void Train() = 0;
 
-    /**
-     * @brief logistic
-     * @param value
-     * @return
-     */
-    static FloatType logistic(FloatType value);
-
  private:
+
+    //! the number of input neurons
+    std::size_t input_neurons_;
+
+    //! the number of output neurons
+    std::size_t output_neurons_;
 
     //! the vector of inputs
     InputVector input_;
@@ -81,55 +97,6 @@ class Layer
     OutputVector output_;
 };
 
-//! implementation
+}  // namespace deeppp
 
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons>
-Layer<FloatType, input_neurons, output_neurons>::Layer()
-{
-    input_.setConstant(0);
-    output_.setConstant(0);
-}
-
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons>
-FloatType Layer<FloatType, input_neurons, output_neurons>::logistic(FloatType value)
-{
-    return 1.0 / (1.0 + std::exp(-value));
-}
-
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons>
-void Layer<FloatType, input_neurons, output_neurons>::Input(const InputVector &input)
-{
-    input_ = input;
-}
-
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons>
-typename Layer<FloatType, input_neurons, output_neurons>::InputVector Layer<FloatType, input_neurons, output_neurons>::Input() const
-{
-    return input_;
-}
-
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons>
-typename Layer<FloatType, input_neurons, output_neurons>::InputVector& Layer<FloatType, input_neurons, output_neurons>::Input()
-{
-    return input_;
-}
-
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons>
-void Layer<FloatType, input_neurons, output_neurons>::Output(const OutputVector& output)
-{
-    output_ = output;
-}
-
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons>
-typename Layer<FloatType, input_neurons, output_neurons>::OutputVector Layer<FloatType, input_neurons, output_neurons>::Output() const
-{
-    return output_;
-}
-
-template <typename FloatType, std::size_t input_neurons, std::size_t output_neurons>
-typename Layer<FloatType, input_neurons, output_neurons>::OutputVector& Layer<FloatType, input_neurons, output_neurons>::Output()
-{
-    return output_;
-}
-
-#endif // LAYER_H
+#endif // DEEPPP_LAYER_H

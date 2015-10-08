@@ -1,12 +1,19 @@
-#ifndef RANDOM_H
-#define RANDOM_H
+#ifndef DEEPPP_RANDOM_H
+#define DEEPPP_RANDOM_H
 
 #include <random>
+
+namespace deeppp
+{
 
 class Random
 {
  public:
 
+    /**
+     * @brief Uniform01
+     * @return a random sample x \in [0;1]
+     */
     static double Uniform01();
 
  private:
@@ -21,4 +28,6 @@ class Random
     static std::uniform_real_distribution<double> uniform_01_;
 };
 
-#endif // RANDOM_H
+}  // namespace deeppp
+
+#endif // DEEPPP_RANDOM_H

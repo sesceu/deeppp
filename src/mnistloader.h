@@ -1,10 +1,13 @@
-#ifndef MNISTLOADER_H
-#define MNISTLOADER_H
+#ifndef DEEPPP_MNISTLOADER_H
+#define DEEPPP_MNISTLOADER_H
 
 #include "mnistimage.h"
 
 #include <list>
 #include <string>
+
+namespace deeppp
+{
 
 class MNISTLoader
 {
@@ -32,4 +35,6 @@ void MNISTLoader::SwapEndianess(T& value)
     value = swapped_value;
 }
 
-#endif // MNISTLOADER_H
+}  // namespace deeppp
+
+#endif // DEEPPP_MNISTLOADER_H

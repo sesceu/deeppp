@@ -5,6 +5,9 @@
 #include <iostream>
 #include <stdexcept>
 
+namespace deeppp
+{
+
 MNISTLoader::ImageList MNISTLoader::Load(const std::string filename)
 {
     std::fstream input_stream(filename, std::ios::in | std::ios::binary);
@@ -48,3 +51,4 @@ MNISTLoader::ImageList MNISTLoader::Load(const std::string filename)
     return image_list;
 }
 
+}  // namespace deeppp
